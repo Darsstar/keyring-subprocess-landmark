@@ -6,9 +6,11 @@ class KeyringEntryPointNotFoundError(Exception):
 
 
 def keyring_subprocess():
-    try:
+    import sys
+
+    if sys.version_info > (3, 10):
         from importlib import metadata
-    except ImportError:
+    else:
         import importlib_metadata as metadata
 
     eps = metadata.entry_points(group="console_scripts")
