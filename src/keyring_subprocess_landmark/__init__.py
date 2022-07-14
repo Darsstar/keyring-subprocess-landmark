@@ -13,13 +13,27 @@ def keyring_subprocess():
     else:
         import importlib_metadata as metadata
 
-    eps = metadata.entry_points(group="console_scripts")
+    console_scripts = metadata.entry_points(group="console_scripts")
 
-    if "keyring" not in eps.names:
+    if "keyring" not in console_scripts.names:
         raise KeyringEntryPointNotFoundError(
             "No 'keyring' entry point found in the 'console_scripts' group, is keyring installed?"
         )
 
-    keyring = eps["keyring"].load()
+    console_script = console_scripts["keyring"].load()
 
-    return keyring()
+    backends = metadata.entry_points(group="keyring.backends")
+
+    if "keyring-subprocess" not in backends.names:
+        raise KeyringEntryPointNotFoundError(
+            "No 'keyring-subprocess' entry point found in the 'keyring.backends' group, "
+            "is keyring-subprocess installed?"
+        )
+
+    backend = backends["keyring-subprocess"].load()
+
+    import keyring
+
+    keyring.set_keyring(backend())
+
+    return console_script()
